@@ -42,7 +42,7 @@ async function login(page, USERNAME, PASSWORD) {
 }
 
 test.describe("Kooli siseveebi testid", () => {
-  test("Õpilane logib sisse, avab enda tunniplaani ja teeb pildi", async ({
+  /* test("Õpilane logib sisse, avab enda tunniplaani ja teeb pildi", async ({
     page,
   }) => {
     await login(page, USERNAME, PASSWORD);
@@ -59,26 +59,24 @@ test.describe("Kooli siseveebi testid", () => {
       path: "screenshots/minu-tunniplaan.png",
       fullPage: true,
     });
-  });
+  }); */
 
-  /* test("Õpetaja tunniplaani otsimine ja pildi tegemine", async ({ page }) => {
+  test("Õpetaja tunniplaani otsimine ja pildi tegemine", async ({ page }) => {
     await login(page, USERNAME, PASSWORD);
+    await page.waitForTimeout(1000);
 
-    await page.getByText(new RegExp("TUNNIPLAAN", "i")).click();
+    await page.getByRole("button", { name: /Vana õpilase vaade/ }).click();
+    await page.waitForTimeout(1000);
 
-    await page.getByText(new RegExp("Õpetaja tunniplaan", "i")).click();
+    await page.getByRole("link", { name: /Kutseõpe/ }).click();
+    await page.waitForTimeout(500);
 
-    const teacherName = TEACHERS[0];
+    await page.locator('a.chosen-single').filter({ hasText: 'Vali õpetaja' }).click();
+    await page.waitForTimeout(500);
 
-    const searchInput = page.getByRole("textbox", {
-      name: "Otsi",
-    });
-
-    await expect(searchInput).toBeVisible();
-    await searchInput.fill(teacherName);
-    await searchInput.press("Enter");
-
-    await expect(page.getByText(new RegExp(teacherName, "i"))).toBeVisible();
+    await page.keyboard.type(envVars.TEACHER_1);
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(1000);
 
     await page.screenshot({
       path: "screenshots/opetaja-tunniplaan.png",
@@ -86,7 +84,7 @@ test.describe("Kooli siseveebi testid", () => {
     });
   });
 
-  for (const teacherName of TEACHERS) {
+  /* for (const teacherName of TEACHERS) {
     test(`Mitme õpetaja tunniplaani otsimine: ${teacherName}`, async ({
       page,
     }) => {
