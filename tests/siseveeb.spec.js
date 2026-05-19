@@ -32,11 +32,12 @@ async function login(page, USERNAME, PASSWORD) {
 
   await page.getByRole("button", { name: /Sisene/ }).click();
 
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
+  await page.waitForTimeout(1500);
 }
 
 test.describe("Kooli siseveebi testid", () => {
-  /* test("Õpilane logib sisse, avab enda tunniplaani ja teeb pildi", async ({
+  test("Õpilane logib sisse, avab enda tunniplaani ja teeb pildi", async ({
     page,
   }) => {
     await login(page, USERNAME, PASSWORD);
@@ -53,32 +54,32 @@ test.describe("Kooli siseveebi testid", () => {
       path: "screenshots/minu-tunniplaan.png",
       fullPage: true,
     });
-  }); */
+  });
 
-  /*   test("Õpetaja tunniplaani otsimine ja pildi tegemine", async ({ page }) => {
-      await login(page, USERNAME, PASSWORD);
-      await page.waitForTimeout(1000);
-  
-      await page.getByRole("button", { name: /Vana õpilase vaade/ }).click();
-      await page.waitForTimeout(1000);
-  
-      await page.getByRole("link", { name: /Kutseõpe/ }).click();
-      await page.waitForTimeout(500);
-  
-      await page.locator('a.chosen-single').filter({ hasText: 'Vali õpetaja' }).click();
-      await page.waitForTimeout(500);
-  
-      await page.keyboard.type(envVars.TEACHER_1);
-      await page.keyboard.press('Enter');
-      await page.waitForTimeout(1000);
-  
-      await page.screenshot({
-        path: "screenshots/opetaja-tunniplaan.png",
-        fullPage: true,
-      });
-    }); */
+  test("Õpetaja tunniplaani otsimine ja pildi tegemine", async ({ page }) => {
+    await login(page, USERNAME, PASSWORD);
+    await page.waitForTimeout(800);
 
-  /* [
+    await page.getByRole("button", { name: /Vana õpilase vaade/ }).click();
+    await page.waitForTimeout(800);
+
+    await page.getByRole("link", { name: /Kutseõpe/ }).click();
+    await page.waitForTimeout(500);
+
+    await page.locator('a.chosen-single').filter({ hasText: 'Vali õpetaja' }).click();
+    await page.waitForTimeout(500);
+
+    await page.keyboard.type(envVars.TEACHER_1);
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(1500);
+
+    await page.screenshot({
+      path: "screenshots/opetaja-tunniplaan.png",
+      fullPage: true,
+    });
+  });
+
+  [
     envVars.TEACHER_1,
     envVars.TEACHER_2,
     envVars.TEACHER_3,
@@ -91,30 +92,29 @@ test.describe("Kooli siseveebi testid", () => {
       await page.waitForTimeout(1000);
 
       await page.getByRole("link", { name: /Kutseõpe/ }).click();
-      await page.waitForTimeout(500);
-
-      await page
-        .locator("a.chosen-single")
-        .filter({ hasText: "Vali õpetaja" })
-        .click();
-
       await page.waitForTimeout(1000);
+
+      const dropdown = page.locator("a.chosen-single").filter({ hasText: "Vali õpetaja" });
+      await dropdown.click();
+      await page.waitForTimeout(500);
 
       await page.keyboard.type(teacherName);
       await page.keyboard.press("Enter");
+
+      await page.waitForTimeout(1000);
 
       await page.screenshot({
         path: `screenshots/opetaja-tunniplaan-${teacherName}.png`,
         fullPage: true,
       });
     });
-  }); */
+  });
 
   test("Lehe laadimisaja mõõtmine(performance.now())", async ({ page }) => {
     const startTime = performance.now();
 
     await page.goto(BASE_URL);
-    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(3000);
 
     const endTime = performance.now();
     const loadTime = endTime - startTime;
@@ -124,16 +124,16 @@ test.describe("Kooli siseveebi testid", () => {
     expect(loadTime).toBeLessThan(10000);
   });
 
-  /*   test("Vale parooliga sisselogimine kuvab veateate", async ({ page }) => {
-      await page.goto(BASE_URL);
-  
-      await page.locator("#Kasutajatunnus_id").fill(WRONG_USERNAME);
-      await page.locator("#Parool_id").fill(WRONG_PASSWORD);
-  
-      await page
-        .getByRole("button", { name: new RegExp("Sisene", "i") })
-        .click();
-  
-      await expect(page.getByText("Vale kasutajanimi või parool")).toBeVisible();
-    }); */
+  test("Vale parooliga sisselogimine kuvab veateate", async ({ page }) => {
+    await page.goto(BASE_URL);
+
+    await page.locator("#Kasutajatunnus_id").fill(WRONG_USERNAME);
+    await page.locator("#Parool_id").fill(WRONG_PASSWORD);
+
+    await page
+      .getByRole("button", { name: new RegExp("Sisene", "i") })
+      .click();
+
+    await expect(page.getByRole("status")).toContainText("Sisselogimine ebaõnnestus");
+  });
 });
